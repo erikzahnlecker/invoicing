@@ -1,0 +1,24 @@
+.right {
+  position:absolute;
+  top:0;
+  right:0;
+}
+
+.details {
+  position: absolute;
+}
+
+.invoiceDate {
+
+}
+
+.invoiceNumber {
+  position: relative;
+  top: 50px;
+}
+
+.description {
+  position:relative;
+  right:220px;
+  top: 188px;
+}
