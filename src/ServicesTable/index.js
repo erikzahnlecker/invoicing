@@ -71,6 +71,7 @@ incrementId () {
             <th>Price</th>
             <th>Amount</th>
           </tr>
+          <tbody>
           {this.state.services.map((service, index) => (
             <Service
               key={service.id}
@@ -79,6 +80,7 @@ incrementId () {
               updateServices={(data) => this._updateStateFromService(data, service.id)}
               service={service}/>
           ))}
+          </tbody>
         </table>
         <p>Total: ${this._sumTotal(this.state.services)}</p>
         <button onClick={() => this._addNewService()}>+ Add Row</button>
@@ -145,7 +147,6 @@ class Service extends Component {
 
   render () {
     return (
-      <div>
         <tr>
           <td>
             <ServiceSelect onChange={value => this._handleChangeType(value, this.props.service.id)}/>
@@ -164,7 +165,6 @@ class Service extends Component {
             <button onClick={() => this.props.deleteRow(this.props.i)}>Delete Row</button>
           </td>
         </tr>
-      </div>
     )
   }
 
