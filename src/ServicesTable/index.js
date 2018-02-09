@@ -1,6 +1,9 @@
 import React, { Component } from 'react';
 import Input from '../Input';
+import ServiceSelect from '../Select';
 import './styles.css';
+
+var idCounter = 0;
 
 export default class ServicesTable extends Component {
   constructor (props) {
@@ -11,13 +14,17 @@ export default class ServicesTable extends Component {
     }
   }
 
+incrementId () {
+  return idCounter++
+}
+
   _getBlankService () {
     return {
-      type: '',
+      type: 'service',
       description: '',
       quantity: 0,
       price: 0,
-      amount: 0,
+      id: this.incrementId(),
     }
   }
 
@@ -30,20 +37,30 @@ export default class ServicesTable extends Component {
   _deleteServiceRow (index) {
     var rows = [...this.state.services];
     rows.splice(index, 1);
-    console.log(rows);
     this.setState({services: rows});
-    console.log(this.state);
-    console.log(this.state.services);
   }
 
-  _updateStateFromService (service, index) {
-    var rows = [...this.state.services];
-    rows[index] = service;
-    this.setState({services: rows});
-    console.log(this.state);
+  _updateStateFromService (data, id) {
+    this.setState({services: this.state.services.map((service) => {
+      if(service.id === id) {
+        return {
+          ...service,
+          ...data,
+        }
+      }
+      return service
+    }
+    )});
+  }
+
+  _sumTotal (services) {
+    return services.reduce(function (a,b) {
+      return a + (b.quantity * b.price)
+    }, 0)
   }
 
   render(){
+    console.log(this.state);
     return (
       <div>
         <table>
@@ -53,16 +70,17 @@ export default class ServicesTable extends Component {
             <th>Quantity</th>
             <th>Price</th>
             <th>Amount</th>
-            <th>Total</th>
           </tr>
           {this.state.services.map((service, index) => (
             <Service
-              key={index}
+              key={service.id}
               i={index}
               deleteRow={this._deleteServiceRow.bind(this)}
-              updateServices={this._updateStateFromService.bind(this)}/>
+              updateServices={(data) => this._updateStateFromService(data, service.id)}
+              service={service}/>
           ))}
         </table>
+        <p>Total: ${this._sumTotal(this.state.services)}</p>
         <button onClick={() => this._addNewService()}>+ Add Row</button>
       </div>
     );
@@ -75,11 +93,7 @@ class Service extends Component {
     super(props);
 
     this.state = {
-      type: '',
-      description: '',
-      quantity: 0,
-      price: 0,
-      amount: 0,
+      ...props.service
     }
   }
 
@@ -87,11 +101,8 @@ class Service extends Component {
     this.setState({
       type: value,
     }, () => {
-      if (this.props.onChange) {
-        this.props.onChange(this.state);
-      }
+      this.props.updateServices(this.state, index);
     })
-    this.props.updateServices(this.state, index);
   }
 
   _handleChangeDescription (value, index) {
@@ -101,8 +112,8 @@ class Service extends Component {
       if (this.props.onChange) {
         this.props.onChange(this.state);
       }
+      this.props.updateServices(this.state, index);
     })
-    this.props.updateServices(this.state, index);
   }
 
   _handleChangeQuantity (value, index) {
@@ -112,13 +123,8 @@ class Service extends Component {
       if (this.props.onChange) {
         this.props.onChange(this.state);
       }
+      this.props.updateServices(this.state, index);
     })
-    if (value > 0) {
-      this.setState({amount: value*this.state.price});
-    } else {
-      this.setState({amount: 0});
-    }
-    this.props.updateServices(this.state, index);
   }
 
   _handleChangePrice (value, index) {
@@ -128,13 +134,8 @@ class Service extends Component {
       if (this.props.onChange) {
         this.props.onChange(this.state);
       }
+      this.props.updateServices(this.state, index);
     })
-    if (this.state.quantity > 0) {
-      this.setState({amount: this.state.quantity*value});
-    } else {
-      this.setState({amount: 0});
-    }
-    this.props.updateServices(this.state, index);
   }
 
   _multiply (x, y) {
@@ -147,16 +148,16 @@ class Service extends Component {
       <div>
         <tr>
           <td>
-            <Input placeholder='Describe the service' type= 'text' onChange={value => this._handleChangeType(value, this.props.i)}/>
+            <ServiceSelect onChange={value => this._handleChangeType(value, this.props.service.id)}/>
           </td>
           <td>
-            <Input placeholder='Describe what you provided' type= 'text' onChange={value => this._handleChangeDescription(value, this.props.i)}/>
+            <Input placeholder='Describe what you provided' type= 'text' onChange={value => this._handleChangeDescription(value, this.props.service.id)}/>
           </td>
           <td>
-            <Input placeholder='#' type='number' onChange={value => this._handleChangeQuantity(value, this.props.i)}/>
+            <Input placeholder='#' type='number' onChange={value => this._handleChangeQuantity(value, this.props.service.id)}/>
           </td>
           <td>
-            <Input placeholder='Price per item' type='number' onChange={value => this._handleChangePrice(value, this.props.i)}/>
+            <Input placeholder='Price per item' type='number' onChange={value => this._handleChangePrice(value, this.props.service.id)}/>
           </td>
           <td class="amount">{this._multiply(this.state.quantity, this.state.price)}</td>
           <td>
